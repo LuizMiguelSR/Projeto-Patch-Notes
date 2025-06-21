@@ -16,43 +16,39 @@
             {{ session('error') }}
         </div>
     @endif
-    <div class="container-patch">
-        <div class="patch-grid">
+    <div class="container py-4">
+        <div class="row g-4 patch-grid">
             @foreach ($patchNotes as $patch)
                 @php
-                    try {
-                        $dateFormatted = \Carbon\Carbon::parse($patch->date)->format('d M Y');
-                    } catch (\Exception $e) {
-                        $dateFormatted = $patch->date;
-                    }
-
-                    $status = $patch->status ?? 'Unknown';
-                    $summaryDate = "📅 Date: $dateFormatted";
-                    $summaryStatus = "📌 Status: $status";
                     $hasSkillBalance = Str::contains(Str::lower($patch->content), 'skill balance');
+                    $isSkillBalance = $hasSkillBalance ? 'skill-balance' : '';
                     $image = $hasSkillBalance
                         ? asset('images/patch-note-holder2.jpg')
                         : ($patch->image_url ?? asset('images/patch-placeholder.jpg'));
                     $title = $hasSkillBalance ? 'Patch Note Skill Balance' : 'Patch Note';
-                    $isSkillBalance = $hasSkillBalance ? 'skill-balance' : '';
+                    $summaryDate = "📅 Date: " . \Carbon\Carbon::parse($patch->date)->format('d M Y');
+                    $summaryStatus = "📌 Status: " . ($patch->status ?? 'Unknown');
                 @endphp
 
-                <a href="{{ route('patch-notes.show', $patch->id) }}" class="patch-card {{ $isSkillBalance }}"
-                   data-skill-balance="{{ $hasSkillBalance ? 'true' : 'false' }}">
-                    <div class="patch-thumb">
-                        <img src="{{ $image }}" alt="Capa do Patch">
-                    </div>
-                    <div class="patch-body">
-                        <h3 class="patch-title">{{ $title }}</h3>
-                        <p class="patch-meta">
-                            <span class="patch-date">{{ $summaryDate }}</span>
-                            <span class="patch-status">{{ $summaryStatus }}</span>
-                        </p>
-                        <div class="patch-footer">
-                            <span class="patch-category">Read more</span>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 patch-card-wrapper {{ $isSkillBalance }}">
+                    <a href="{{ route('patch-notes.show', $patch->id) }}"
+                       class="patch-card w-100"
+                       data-skill-balance="{{ $hasSkillBalance ? 'true' : 'false' }}">
+                        <div class="patch-thumb">
+                            <img src="{{ $image }}" alt="Capa do Patch">
                         </div>
-                    </div>
-                </a>
+                        <div class="patch-body">
+                            <h3 class="patch-title">{{ $title }}</h3>
+                            <p class="patch-meta">
+                                <span class="patch-date">{{ $summaryDate }}</span>
+                                <span class="patch-status">{{ $summaryStatus }}</span>
+                            </p>
+                            <div class="patch-footer">
+                                <span class="patch-category">Read more</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
             @endforeach
         </div>
     </div>

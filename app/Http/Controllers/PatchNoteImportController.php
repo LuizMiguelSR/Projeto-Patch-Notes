@@ -38,7 +38,6 @@ class PatchNoteImportController extends Controller
 
         $html = mb_convert_encoding($response->body(), 'HTML-ENTITIES', 'UTF-8');
 
-        // Parse do HTML
         libxml_use_internal_errors(true);
         $dom = new DOMDocument();
         $dom->loadHTML('<?xml encoding="UTF-8">' . $html);
@@ -50,11 +49,10 @@ class PatchNoteImportController extends Controller
         $recording = false;
         $tableCaptured = false;
 
-        // 1. Primeiro coletamos todos os patches em ordem
         foreach ($allElements as $element) {
             if ($element->nodeName === 'p' && str_starts_with(trim($element->textContent), '📌Status: Completed')) {
                 if ($recording && !empty($currentPatchElements)) {
-                    array_unshift($patches, $currentPatchElements); // Adiciona no início do array
+                    array_unshift($patches, $currentPatchElements);
                 }
                 $currentPatchElements = [];
                 $recording = true;
@@ -73,14 +71,13 @@ class PatchNoteImportController extends Controller
         }
 
         if ($recording && !empty($currentPatchElements)) {
-            array_unshift($patches, $currentPatchElements); // Adiciona o último patch no início
+            array_unshift($patches, $currentPatchElements);
         }
 
         $importedCount = 0;
         $skippedCount = 0;
         $updatedCount = 0;
 
-        // 2. Agora processamos na ordem correta (do mais antigo para o mais recente)
         foreach ($patches as $patch) {
             $patchHtml = $this->domNodesToHtml($patch);
             libxml_use_internal_errors(true);
@@ -90,7 +87,7 @@ class PatchNoteImportController extends Controller
             $xpath = new DOMXPath($doc);
             $spans = $xpath->query('//span');
 
-            $date = now(); // valor padrão
+            $date = now();
 
             foreach ($spans as $i => $span) {
                 if (strpos($span->textContent, '📅') !== false) {
@@ -117,7 +114,6 @@ class PatchNoteImportController extends Controller
                 }
             }
 
-            // Verifica se já existe um patch com esta data
             $existingPatch = PatchNote::whereDate('date', $date->toDateString())->first();
 
             if (!$existingPatch) {
@@ -128,11 +124,6 @@ class PatchNoteImportController extends Controller
                 ]);
                 $importedCount++;
             } else {
-                // Opcional: atualizar se o conteúdo for diferente
-                if ($existingPatch->content !== $patchHtml) {
-                    $existingPatch->update(['content' => $patchHtml]);
-                    $updatedCount++;
-                }
                 $skippedCount++;
             }
         }

@@ -5,6 +5,7 @@
     <title>@yield('title', 'ToS Papaya Patch Notes')</title>
     <link rel="icon" href="{{ asset('images/optimizing.png') }}">
     <link rel="stylesheet" href="{{ asset('css/patch-notes.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -17,37 +18,30 @@
     @stack('head')
 </head>
 <body>
-<nav class="sticky top-0 z-50 bg-white shadow">
-    <div class="container-patch flex justify-between items-center px-4 py-3 mx-auto">
-        <a href="{{ route('patch-notes.index') }}" class="nav-title">
-            📋 ToS Papaya Patch Notes
-        </a>
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="{{ route('patch-notes.index') }}">📋 ToS Papaya Patch Notes</a>
 
-        @auth
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="filter-btn">🚪 Sair</button>
-            </form>
+        <div class="d-flex gap-2">
+            @auth
+                <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-primary btn-sm">🚪 Sair</button>
+                </form>
 
-            <form action="{{ route('patch-notes.import') }}" method="POST">
-                @csrf
-                <button type="submit" class="filter-btn bg-green-600 hover:bg-green-800">
-                    📥 Importar
-                </button>
-            </form>
-        @endauth
+                <form method="POST" action="{{ route('patch-notes.import') }}" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-primary btn-sm">📥 Importar</button>
+                </form>
+            @endauth
 
-        @hasSection('showFilters')
-            @if (trim($__env->yieldContent('showFilters')) === 'true')
-                <button id="filter-skill" class="filter-btn">🔍 Skill Balance</button>
-                <button id="reset-filter" class="filter-btn">↩️ Show all</button>
+            @hasSection('showFilters')
+                @if (trim($__env->yieldContent('showFilters')) === 'true')
+                    <button id="filter-skill" class="btn btn-primary btn-sm">🔍 Skill Balance</button>
+                    <button id="reset-filter" class="btn btn-primary btn-sm">↩️ Show all</button>
+                @endif
             @endif
-        @endif
-
-        @yield('back-button')
-        @hasSection('extraButtons')
-            @yield('extraButtons')
-        @endif
+        </div>
     </div>
 </nav>
 
@@ -76,15 +70,16 @@
             filterBtn.addEventListener('click', () => {
                 let hasVisibleCards = false;
 
-                document.querySelectorAll('.patch-card').forEach(card => {
-                    const isSkillBalance = card.classList.contains('skill-balance') ||
-                        card.querySelector('.patch-title')?.textContent.toLowerCase().includes('skill balance');
+                document.querySelectorAll('.patch-card-wrapper').forEach(wrapper => {
+                    const card = wrapper.querySelector('.patch-card');
+                    const isSkillBalance = wrapper.classList.contains('skill-balance') ||
+                        card?.querySelector('.patch-title')?.textContent.toLowerCase().includes('skill balance');
 
                     if (isSkillBalance) {
-                        card.style.display = 'flex';
+                        wrapper.style.display = 'block';
                         hasVisibleCards = true;
                     } else {
-                        card.style.display = 'none';
+                        wrapper.style.display = 'none';
                     }
                 });
 
@@ -105,10 +100,14 @@
                 document.querySelectorAll('.patch-card').forEach(card => {
                     card.style.display = 'flex';
                 });
+                document.querySelectorAll('.patch-card-wrapper').forEach(wrapper => {
+                    wrapper.style.display = 'block';
+                });
                 document.querySelector('.no-results')?.remove();
             });
         }
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
