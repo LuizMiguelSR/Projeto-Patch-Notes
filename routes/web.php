@@ -20,3 +20,5 @@ Route::middleware('auth')->group(function () {
     Route::put('/patch-notes/{id}', [PatchNoteController::class, 'update'])->name('patch-notes.update');
     Route::post('/patch-notes/import', [PatchNoteImportController::class, 'import'])->name('patch-notes.import');
 });
+
+Route::get('/cron/import-patches', [PatchNoteImportController::class, 'runFromCron']);

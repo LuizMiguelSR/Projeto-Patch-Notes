@@ -52,4 +52,9 @@
             @endforeach
         </div>
     </div>
+    <script>
+        fetch('/cron/import-patches?token={{ env("CRON_SECRET") }}')
+            .then(() => console.log('Importação acionada.'))
+            .catch(() => console.warn('Erro ao acionar importação.'));
+    </script>
 @endsection

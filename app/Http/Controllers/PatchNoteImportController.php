@@ -12,6 +12,34 @@ use Illuminate\Support\Facades\Log;
 
 class PatchNoteImportController extends Controller
 {
+    public function runFromCron(Request $request)
+    {
+        $secret = env('CRON_SECRET');
+
+        if ($request->query('token') !== $secret) {
+            Log::warning('Tentativa de acesso não autorizado ao cron de importação.');
+            return response('Acesso não autorizado', 403);
+        }
+
+        try {
+            Log::info('Iniciando importação automática de patch notes via cron...');
+
+            [$importedCount, $updatedCount, $skippedCount] = $this->import($request, true);
+
+            if ($importedCount > 0 || $updatedCount > 0) {
+                Log::info("Importação via cron concluída: $importedCount novos, $updatedCount atualizados, $skippedCount já existentes.");
+            } else {
+                Log::info("Importação via cron executada, mas sem alterações. Todos os $skippedCount patches já existiam.");
+            }
+
+            return response('Importação processada via cron.', 200);
+
+        } catch (\Throwable $e) {
+            Log::error('Erro durante importação via cron: ' . $e->getMessage());
+            return response('Erro ao importar patches.', 500);
+        }
+    }
+
     private function domNodesToHtml(array $nodes): string
     {
         $doc = new DOMDocument();
@@ -26,7 +54,7 @@ class PatchNoteImportController extends Controller
         return $doc->saveHTML($container);
     }
 
-    public function import(Request $request)
+    public function import(Request $request, bool $silent = false)
     {
         $url = env('PATCH_NOTES_DOC_URL');
 
@@ -128,9 +156,13 @@ class PatchNoteImportController extends Controller
             }
         }
 
-        return back()->with('success', "Importação concluída:
+        if ($silent) {
+            return [$importedCount, $updatedCount, $skippedCount];
+        } else {
+            return back()->with('success', "Importação concluída:
             $importedCount novos patches,
             $updatedCount atualizados,
             $skippedCount já existentes (não modificados).");
+        }
     }
 }
