@@ -7,10 +7,35 @@ use Illuminate\Support\Facades\Validator;
 
 class PatchNoteController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $patchNotes = PatchNote::orderByDesc('date')->get();
+        $query = PatchNote::query();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('content', 'like', '%' . $search . '%');
+        }
+
+        $patchNotes = $query->orderByDesc('date')->get();
+
         return view('patch-notes.index', compact('patchNotes'));
+    }
+
+    public function calendar()
+    {
+        $patchNotes = PatchNote::select('id', 'date')->get();
+
+        $events = $patchNotes->map(function ($note) {
+            return [
+                'title' => '✅ Maintence',
+                'start' => \Carbon\Carbon::parse($note->date)->format('Y-m-d'),
+                'url'   => route('patch-notes.show', ['id' => $note->id]),
+                'backgroundColor' => '#d38b4c',
+                'borderColor' => '#d38b4c'
+            ];
+        });
+
+        return view('patch-notes.calendar', ['events' => $events]);
     }
 
     public function edit($id)

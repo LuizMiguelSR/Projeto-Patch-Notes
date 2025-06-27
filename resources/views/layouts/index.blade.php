@@ -21,19 +21,31 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow sticky-top">
     <div class="container">
         <a class="navbar-brand" href="{{ route('patch-notes.index') }}">📋 ToS Papaya Patch Notes</a>
-
         <div class="d-flex gap-2">
             @auth
                 <form method="POST" action="{{ route('logout') }}" class="d-inline">
                     @csrf
-                    <button type="submit" class="btn btn-primary btn-sm">🚪 Sair</button>
+                    <button type="submit" class="btn btn-primary btn-sm">🚪 Exit</button>
                 </form>
 
                 <form method="POST" action="{{ route('patch-notes.import') }}" class="d-inline">
                     @csrf
-                    <button type="submit" class="btn btn-primary btn-sm">📥 Importar</button>
+                    <button type="submit" class="btn btn-primary btn-sm">📥 Import</button>
                 </form>
             @endauth
+            <form action="{{ route('patch-notes.index') }}" method="GET" class="d-flex">
+                <input
+                    type="text"
+                    name="search"
+                    class="form-control form-control-sm me-2"
+                    placeholder="🔍 Search..."
+                    value="{{ request('search') }}"
+                >
+                <button class="btn btn-outline-primary btn-sm" type="submit">Find</button>
+            </form>
+            <a href="{{ route('patch-notes.calendar') }}" class="btn btn-primary btn-sm">
+                🗓️ Calendar
+            </a>
 
             @hasSection('showFilters')
                 @if (trim($__env->yieldContent('showFilters')) === 'true')
